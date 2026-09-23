@@ -63,6 +63,7 @@ type AudioContextType = {
   playHover: () => void
   playSwipe: () => void
   playSwipeClose: () => void
+  getSpeechAnalyser: () => AnalyserNode | null
 }
 
 const AudioContext = createContext<AudioContextType>({
@@ -82,6 +83,7 @@ const AudioContext = createContext<AudioContextType>({
   playHover: () => {},
   playSwipe: () => {},
   playSwipeClose: () => {},
+  getSpeechAnalyser: () => null,
 })
 
 export function AudioProvider({ children, soundEnabled }: { children: ReactNode; soundEnabled: boolean }) {
@@ -422,17 +424,44 @@ export function AudioProvider({ children, soundEnabled }: { children: ReactNode;
   }
 
   const speechAudioRef = useRef<HTMLAudioElement | null>(null)
+  const speechAnalyserRef = useRef<AnalyserNode | null>(null)
+  const speechSourceRef = useRef<MediaElementAudioSourceNode | null>(null)
+
+  const getSpeechAnalyser = () => speechAnalyserRef.current
 
   const playSpeech = (text: string) => {
     if (!soundEnabled) return
     stopSpeech()
     
-    // Primary strategy: Load a pre-recorded high-quality MP3 from the public folder
-    const url = `/quote.mp3`
-    const audio = new Audio(url)
-    audio.playbackRate = 1.0 // Reset playback rate for local MP3
-    speechAudioRef.current = audio
+    let audio = speechAudioRef.current
+    if (!audio) {
+      const url = `/quote.mp3`
+      audio = new Audio(url)
+      audio.crossOrigin = "anonymous"
+      speechAudioRef.current = audio
+    }
+    
+    audio.playbackRate = 1.0
 
+    const ctx = ctxRef.current
+    if (ctx && ctx.state !== "suspended") {
+      if (!speechAnalyserRef.current) {
+        try {
+          const analyser = ctx.createAnalyser()
+          analyser.fftSize = 64
+          speechAnalyserRef.current = analyser
+          
+          const source = ctx.createMediaElementSource(audio)
+          speechSourceRef.current = source
+          source.connect(analyser)
+          analyser.connect(ctx.destination)
+        } catch (err) {
+          console.warn("Audio routing failed:", err)
+        }
+      }
+    }
+
+    audio.currentTime = 0
     audio.play().catch((err) => {
       console.warn("Failed to play quote.mp3:", err)
     })
@@ -442,7 +471,6 @@ export function AudioProvider({ children, soundEnabled }: { children: ReactNode;
     if (speechAudioRef.current) {
       speechAudioRef.current.pause()
       speechAudioRef.current.currentTime = 0
-      speechAudioRef.current = null
     }
   }
 
@@ -622,7 +650,7 @@ export function AudioProvider({ children, soundEnabled }: { children: ReactNode;
   }
 
   return (
-    <AudioContext.Provider value={{ activeThemeId, setMusicTheme: setActiveThemeId, musicThemes: MUSIC_THEMES, playClick, playKeystroke, startMelody, stopMelody, startHarmony, stopHarmony, playSpeech, stopSpeech, playThemeToggle, playExternalLink, playHover, playSwipe, playSwipeClose }}>
+    <AudioContext.Provider value={{ activeThemeId, setMusicTheme: setActiveThemeId, musicThemes: MUSIC_THEMES, playClick, playKeystroke, startMelody, stopMelody, startHarmony, stopHarmony, playSpeech, stopSpeech, playThemeToggle, playExternalLink, playHover, playSwipe, playSwipeClose, getSpeechAnalyser }}>
       {children}
     </AudioContext.Provider>
   )

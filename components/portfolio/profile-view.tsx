@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Volume2 } from "lucide-react"
 import { profile, type ViewId } from "./data"
 import { useAudio } from "./audio-context"
@@ -18,7 +18,23 @@ export function ProfileView({ onNavigate }: { onNavigate: (id: ViewId) => void }
   const { startMelody, stopMelody, startHarmony, stopHarmony, playSpeech, stopSpeech, activeThemeId, setMusicTheme, musicThemes, playClick, playHover } = useAudio()
   const activeTheme = musicThemes.find(t => t.id === activeThemeId) || musicThemes[0]
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [hoveredShortcut, setHoveredShortcut] = useState<string | null>(null)
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false)
+
+  const handleSpeechStart = (e: React.PointerEvent) => {
+    if ((e.pointerType === 'mouse' && e.type === 'pointerenter') || (e.pointerType !== 'mouse' && e.type === 'pointerdown')) {
+      setIsSpeaking(true)
+      playSpeech(profile.quote.text)
+    }
+  }
+
+  const handleSpeechStop = (e: React.PointerEvent) => {
+    if ((e.pointerType === 'mouse' && e.type === 'pointerleave') || (e.pointerType !== 'mouse' && (e.type === 'pointerup' || e.type === 'pointercancel'))) {
+      setIsSpeaking(false)
+      stopSpeech()
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -101,6 +117,16 @@ export function ProfileView({ onNavigate }: { onNavigate: (id: ViewId) => void }
                   <Volume2 className="size-3 animate-pulse text-[var(--pf-fg)]" />
                   <span className="text-[var(--pf-fg)]">Playing Melody...</span>
                 </>
+              ) : hoveredShortcut ? (
+                <>
+                  <Volume2 className="size-3 animate-pulse text-[var(--pf-fg)]" />
+                  <span className="text-[var(--pf-fg)]">Playing Harmony...</span>
+                </>
+              ) : isSpeaking ? (
+                <>
+                  <Volume2 className="size-3 animate-pulse text-[var(--pf-fg)]" />
+                  <span className="text-[var(--pf-fg)]">Playing Speech...</span>
+                </>
               ) : (
                 <span className="text-[var(--pf-faint)]">[ Hover / Hold for audio ]</span>
               )}
@@ -166,9 +192,15 @@ export function ProfileView({ onNavigate }: { onNavigate: (id: ViewId) => void }
                   onPointerEnter={(e) => {
                     if (e.pointerType === 'mouse') {
                       startHarmony(freq);
+                      setHoveredShortcut(s.label);
                     }
                   }}
-                  onPointerLeave={(e) => e.pointerType === 'mouse' && stopHarmony(freq)}
+                  onPointerLeave={(e) => {
+                    if (e.pointerType === 'mouse') {
+                      stopHarmony(freq);
+                      setHoveredShortcut(null);
+                    }
+                  }}
                   onPointerDown={(e) => e.stopPropagation()}
                   className="group font-mono text-sm text-[var(--pf-muted)] transition-colors hover:text-[var(--pf-fg)]"
                 >
@@ -183,37 +215,43 @@ export function ProfileView({ onNavigate }: { onNavigate: (id: ViewId) => void }
 
         {/* Quote, integrated to the side */}
         <blockquote 
-          className="hidden max-w-[13rem] shrink-0 border-l border-[var(--pf-border)] pl-4 lg:block cursor-help transition-opacity hover:opacity-80 active:opacity-60"
-          onPointerEnter={(e) => e.pointerType === 'mouse' && playSpeech(profile.quote.text)}
-          onPointerLeave={(e) => e.pointerType === 'mouse' && stopSpeech()}
-          onPointerDown={(e) => e.pointerType !== 'mouse' && playSpeech(profile.quote.text)}
-          onPointerUp={(e) => e.pointerType !== 'mouse' && stopSpeech()}
-          onPointerCancel={(e) => e.pointerType !== 'mouse' && stopSpeech()}
+          className="hidden max-w-[13rem] shrink-0 border-l border-[var(--pf-border)] pl-4 lg:block cursor-help transition-opacity"
+          onPointerEnter={handleSpeechStart}
+          onPointerLeave={handleSpeechStop}
+          onPointerDown={handleSpeechStart}
+          onPointerUp={handleSpeechStop}
+          onPointerCancel={handleSpeechStop}
           style={{ touchAction: 'none' }}
         >
-          <p className="font-mono text-sm italic leading-relaxed text-[var(--pf-muted)] group-hover:text-[var(--pf-fg)]">
+          <p className={`font-mono text-sm italic leading-relaxed transition-colors ${isSpeaking ? 'text-[var(--pf-fg)]' : 'text-[var(--pf-muted)]'}`}>
             <span className="mr-1 text-2xl leading-none text-[var(--pf-faint)]">&ldquo;</span>
             {profile.quote.text}
           </p>
-          <footer className="mt-3 font-mono text-xs text-[var(--pf-faint)]">— {profile.quote.author}</footer>
+          <footer className={`mt-3 flex items-center gap-1.5 font-mono text-xs transition-colors ${isSpeaking ? 'text-[var(--pf-fg)]' : 'text-[var(--pf-faint)]'}`}>
+            — {profile.quote.author}
+            {isSpeaking && <LiveVoiceWave />}
+          </footer>
         </blockquote>
       </div>
 
       {/* Quote for small screens */}
       <blockquote 
-        className="mt-12 max-w-md border-l border-[var(--pf-border)] pl-4 lg:hidden cursor-help transition-opacity active:opacity-60"
-        onPointerEnter={(e) => e.pointerType === 'mouse' && playSpeech(profile.quote.text)}
-        onPointerLeave={(e) => e.pointerType === 'mouse' && stopSpeech()}
-        onPointerDown={(e) => e.pointerType !== 'mouse' && playSpeech(profile.quote.text)}
-        onPointerUp={(e) => e.pointerType !== 'mouse' && stopSpeech()}
-        onPointerCancel={(e) => e.pointerType !== 'mouse' && stopSpeech()}
+        className="mt-12 max-w-md border-l border-[var(--pf-border)] pl-4 lg:hidden cursor-help transition-opacity"
+        onPointerEnter={handleSpeechStart}
+        onPointerLeave={handleSpeechStop}
+        onPointerDown={handleSpeechStart}
+        onPointerUp={handleSpeechStop}
+        onPointerCancel={handleSpeechStop}
         style={{ touchAction: 'none' }}
       >
-        <p className="font-mono text-sm italic leading-relaxed text-[var(--pf-muted)]">
+        <p className={`font-mono text-sm italic leading-relaxed transition-colors ${isSpeaking ? 'text-[var(--pf-fg)]' : 'text-[var(--pf-muted)]'}`}>
           <span className="mr-1 text-2xl leading-none text-[var(--pf-faint)]">&ldquo;</span>
           {profile.quote.text}
         </p>
-        <footer className="mt-3 font-mono text-xs text-[var(--pf-faint)]">— {profile.quote.author}</footer>
+        <footer className={`mt-3 flex items-center gap-1.5 font-mono text-xs transition-colors ${isSpeaking ? 'text-[var(--pf-fg)]' : 'text-[var(--pf-faint)]'}`}>
+          — {profile.quote.author}
+          {isSpeaking && <LiveVoiceWave />}
+        </footer>
       </blockquote>
     </div>
   )
@@ -231,5 +269,46 @@ function Cross({ className }: { className?: string }) {
     >
       <path d="M6 0v12M0 6h12" />
     </svg>
+  )
+}
+
+function LiveVoiceWave() {
+  const { getSpeechAnalyser } = useAudio()
+  const barRefs = useRef<(HTMLDivElement | null)[]>([])
+  
+  useEffect(() => {
+    let animationFrameId: number;
+    const analyser = getSpeechAnalyser()
+    if (!analyser) return
+    
+    const dataArray = new Uint8Array(analyser.frequencyBinCount)
+    
+    const update = () => {
+      analyser.getByteFrequencyData(dataArray)
+      
+      const b1 = dataArray[2] / 255
+      const b2 = dataArray[5] / 255
+      const b3 = dataArray[8] / 255
+      const b4 = dataArray[11] / 255
+      
+      if (barRefs.current[0]) barRefs.current[0].style.height = `${Math.max(20, b1 * 100)}%`
+      if (barRefs.current[1]) barRefs.current[1].style.height = `${Math.max(20, b2 * 100)}%`
+      if (barRefs.current[2]) barRefs.current[2].style.height = `${Math.max(20, b3 * 100)}%`
+      if (barRefs.current[3]) barRefs.current[3].style.height = `${Math.max(20, b4 * 100)}%`
+      
+      animationFrameId = requestAnimationFrame(update)
+    }
+    
+    update()
+    
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [getSpeechAnalyser])
+  
+  return (
+    <span className="ml-1 flex items-center gap-[2px] h-3">
+      {[0, 1, 2, 3].map(i => (
+        <div key={i} className="w-[2px] h-[20%] bg-[var(--pf-fg)] rounded-full transition-all duration-75" ref={(el) => { barRefs.current[i] = el }} />
+      ))}
+    </span>
   )
 }

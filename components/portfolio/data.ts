@@ -24,8 +24,8 @@ export const profile = {
   },
   links: {
     github: "https://github.com/jbline-dev",
-    linkedin: "https://linkedin.com/in/example",
-    email: "mailto:email@example.com",
+    linkedin: "https://www.linkedin.com/in/john-robert-gaufo-3687ba333",
+    email: "mailto:johnrobertgaufo1@gmail.com",
   },
 }
 

@@ -37,7 +37,6 @@ export default function Page() {
     setSound(true)
     setBootStep(1)
     
-    // Fast boot sequence
     setTimeout(() => setBootStep(2), 300)
     setTimeout(() => setBootStep(3), 500)
     setTimeout(() => setBootStep(4), 800)
@@ -84,11 +83,52 @@ export default function Page() {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  const touchStartRef = useRef(0)
+  const touchEndRef = useRef(0)
+  const scrollRef = useRef<HTMLElement>(null)
+  const scrollPositions = useRef<Record<string, number>>({})
+
+  // Restore scroll position when view changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollPositions.current[view] || 0
+    }
+  }, [view])
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    // Ignore edge swipes (e.g., native back navigation)
+    if (e.targetTouches[0].clientX < 30 || e.targetTouches[0].clientX > (typeof window !== 'undefined' ? window.innerWidth - 30 : 500)) {
+      touchStartRef.current = 0
+      return
+    }
+    touchEndRef.current = 0
+    touchStartRef.current = e.targetTouches[0].clientX
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndRef.current = e.targetTouches[0].clientX
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return
+    const distance = touchStartRef.current - touchEndRef.current
+    const minSwipeDistance = 50
+
+    if (distance < -minSwipeDistance && !mobileOpen) {
+      setMobileOpen(true) // Swipe Right to open
+    } else if (distance > minSwipeDistance && mobileOpen) {
+      setMobileOpen(false) // Swipe Left to close
+    }
+  }
+
   return (
     <AudioProvider soundEnabled={sound}>
       <div
         className="pf flex h-dvh w-full overflow-hidden bg-[var(--pf-bg)] font-sans text-[var(--pf-fg)]"
         data-theme={theme}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         {!hasEntered && (
           <div className={`absolute inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--pf-bg)] transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.3,1)] ${isFading ? 'pointer-events-none -translate-y-full' : 'translate-y-0'}`}>
@@ -199,7 +239,13 @@ export default function Page() {
                 : "color-mix(in oklch, var(--pf-bg) 62%, transparent)",
           }}
         />
-        <main className="pf-scroll relative z-10 min-h-0 flex-1 overflow-y-auto">
+        <main 
+          ref={scrollRef}
+          onScroll={(e) => {
+            scrollPositions.current[view] = e.currentTarget.scrollTop
+          }}
+          className="pf-scroll relative z-10 min-h-0 flex-1 overflow-y-auto"
+        >
           <Workspace view={view} onNavigate={navigate} />
         </main>
           <div className="relative z-10">
@@ -267,9 +313,10 @@ function MobileHeader({ mobileOpen, setMobileOpen, navigate }: { mobileOpen: boo
       <button
         onClick={toggleMenu}
         aria-label={mobileOpen ? "Close menu" : "Open menu"}
-        className="flex size-9 items-center justify-center rounded-md border border-[var(--pf-border)] text-[var(--pf-muted)]"
+        className="relative flex size-9 items-center justify-center rounded-md border border-[var(--pf-border)] text-[var(--pf-muted)] overflow-hidden"
       >
-        {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+        <Menu className={`absolute size-4 transition-all duration-300 ${mobileOpen ? "rotate-90 opacity-0 scale-75" : "rotate-0 opacity-100 scale-100"}`} />
+        <X className={`absolute size-4 transition-all duration-300 ${mobileOpen ? "rotate-0 opacity-100 scale-100" : "-rotate-90 opacity-0 scale-75"}`} />
       </button>
     </div>
   )

@@ -180,14 +180,15 @@ export function Sidebar({ active, onNavigate, theme, onToggleTheme, sound, onTog
               </a>
             </li>
             <li>
-              <button
-                onClick={() => { playExternalLink(); onNavigate("contact"); }}
+              <a
+                href={profile.links.email}
+                onClick={playExternalLink}
                 onPointerEnter={playHover}
                 className="group flex w-full items-center gap-3 rounded-md px-3 py-1.5 text-sm text-[var(--pf-muted)] transition-colors hover:bg-[var(--pf-surface)] hover:text-[var(--pf-fg)]"
               >
                 <Mail className="size-4 shrink-0 opacity-80" />
                 <span className="tracking-wide">Email</span>
-              </button>
+              </a>
             </li>
           </ul>
         </div>

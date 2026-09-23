@@ -273,3 +273,8 @@ select,
 [role="button"] {
   cursor: pointer;
 }
+
+@keyframes pf-wave {
+  0%, 100% { height: 3px; }
+  50% { height: 12px; }
+}

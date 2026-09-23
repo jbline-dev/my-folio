@@ -7,9 +7,7 @@ const nextConfig = {
     unoptimized: true,
   },
   allowedDevOrigins: ['10.0.21.86', '10.137.187.52'],
-  experimental: {
-    serverComponentsExternalPackages: ['react-pdf', 'pdfjs-dist'],
-  },
+  serverExternalPackages: ['react-pdf', 'pdfjs-dist'],
 }
 
 export default nextConfig
