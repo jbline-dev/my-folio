@@ -1,5 +1,7 @@
 # Software Engineer Portfolio
 
+[![GitHub Profile](https://img.shields.io/badge/GitHub-jbline--dev-181717?style=for-the-badge&logo=github)](https://github.com/jbline-dev)
+
 A modern, responsive portfolio website built with [Next.js](https://nextjs.org/), [React](https://react.dev/), and [Tailwind CSS](https://tailwindcss.com/).
 
 ## 🚀 Features

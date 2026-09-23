@@ -23,7 +23,7 @@ export const profile = {
     author: "Vincent van Gogh",
   },
   links: {
-    github: "https://github.com/example",
+    github: "https://github.com/jbline-dev",
     linkedin: "https://linkedin.com/in/example",
     email: "mailto:email@example.com",
   },
