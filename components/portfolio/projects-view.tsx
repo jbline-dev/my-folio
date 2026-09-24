@@ -1,35 +1,53 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ArrowLeft, ArrowUpRight } from "lucide-react"
-import { projects, type Project } from "./data"
-import { ViewHeader } from "./view-header"
-import { useAudio } from "./audio-context"
+import { useState } from "react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { projects, type Project } from "./data";
+import { ViewHeader } from "./view-header";
+import { useAudio } from "./audio-context";
 
 export function ProjectsView({ initialSlug }: { initialSlug?: string }) {
-  const { playClick, playHover } = useAudio()
+  const { playClick, playHover } = useAudio();
   const [selected, setSelected] = useState<Project | null>(
     initialSlug ? (projects.find((p) => p.slug === initialSlug) ?? null) : null,
-  )
+  );
 
   if (selected) {
-    return <ProjectDetail project={selected} onBack={() => { playClick(); setSelected(null); }} />
+    return (
+      <ProjectDetail
+        project={selected}
+        onBack={() => {
+          playClick();
+          setSelected(null);
+        }}
+      />
+    );
   }
 
   return (
     <div className="pf-enter mx-auto max-w-4xl px-6 py-14 sm:px-10">
-      <ViewHeader index="01" section="Work" title="Projects" caption="Selected work, presented in full." />
+      <ViewHeader
+        index="01"
+        section="Work"
+        title="Projects"
+        caption="Currently a placeholders, will be updated soon"
+      />
 
       <ul className="mt-12">
         {projects.map((project) => (
           <li key={project.slug}>
             <button
-              onClick={() => { playClick(); setSelected(project); }}
+              onClick={() => {
+                playClick();
+                setSelected(project);
+              }}
               onPointerEnter={playHover}
               className="group block w-full border-t border-[var(--pf-border)] py-8 text-left transition-colors last:border-b hover:bg-[var(--pf-surface)]"
             >
               <div className="flex items-baseline gap-4">
-                <span className="font-mono text-xs text-[var(--pf-faint)]">{project.index}</span>
+                <span className="font-mono text-xs text-[var(--pf-faint)]">
+                  {project.index}
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <h3 className="text-2xl tracking-tight text-[var(--pf-fg)] sm:text-3xl">
@@ -39,7 +57,9 @@ export function ProjectsView({ initialSlug }: { initialSlug?: string }) {
                       {project.year} · {project.role}
                     </span>
                   </div>
-                  <p className="mt-3 max-w-xl leading-relaxed text-[var(--pf-muted)]">{project.summary}</p>
+                  <p className="mt-3 max-w-xl leading-relaxed text-[var(--pf-muted)]">
+                    {project.summary}
+                  </p>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     {project.tech.map((t) => (
                       <span
@@ -58,11 +78,17 @@ export function ProjectsView({ initialSlug }: { initialSlug?: string }) {
         ))}
       </ul>
     </div>
-  )
+  );
 }
 
-function ProjectDetail({ project, onBack }: { project: Project; onBack: () => void }) {
-  const { playHover } = useAudio()
+function ProjectDetail({
+  project,
+  onBack,
+}: {
+  project: Project;
+  onBack: () => void;
+}) {
+  const { playHover } = useAudio();
   return (
     <div className="pf-enter mx-auto max-w-3xl px-6 py-14 sm:px-10">
       <button
@@ -77,7 +103,9 @@ function ProjectDetail({ project, onBack }: { project: Project; onBack: () => vo
       <p className="font-mono text-xs uppercase tracking-[0.3em] text-[var(--pf-faint)]">
         Project / {project.index}
       </p>
-      <h2 className="mt-4 text-5xl tracking-tight text-[var(--pf-fg)] sm:text-6xl">{project.title}</h2>
+      <h2 className="mt-4 text-5xl tracking-tight text-[var(--pf-fg)] sm:text-6xl">
+        {project.title}
+      </h2>
 
       <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-[var(--pf-border)] py-6 sm:grid-cols-4">
         <Meta label="Year" value={project.year} />
@@ -121,18 +149,24 @@ function ProjectDetail({ project, onBack }: { project: Project; onBack: () => vo
       </div>
 
       <div className="mt-10 border-l-2 border-[var(--pf-border-strong)] pl-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--pf-faint)]">Outcome</p>
-        <p className="mt-2 leading-relaxed text-[var(--pf-fg)]">{project.outcome}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--pf-faint)]">
+          Outcome
+        </p>
+        <p className="mt-2 leading-relaxed text-[var(--pf-fg)]">
+          {project.outcome}
+        </p>
       </div>
     </div>
-  )
+  );
 }
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--pf-faint)]">{label}</dt>
+      <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--pf-faint)]">
+        {label}
+      </dt>
       <dd className="mt-1 text-sm text-[var(--pf-fg)]">{value}</dd>
     </div>
-  )
+  );
 }
