@@ -103,10 +103,6 @@ export function Sidebar({ active, onNavigate, theme, onToggleTheme, sound, onTog
       >
         <span className="flex items-center gap-2">
           <span className="font-mono text-2xl tracking-tight text-[var(--pf-fg)]">{profile.handle}</span>
-          <span className="ml-1 flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[var(--pf-muted)]">
-            <span className="inline-block size-1.5 rounded-full bg-current opacity-70" />
-            Online
-          </span>
         </span>
         <span className="mt-1 font-mono text-xs tracking-wide text-[var(--pf-muted)]">{profile.role}</span>
       </button>
@@ -196,14 +192,7 @@ export function Sidebar({ active, onNavigate, theme, onToggleTheme, sound, onTog
 
       {/* Footer: status + controls */}
       <div className="mt-auto border-t border-[var(--pf-border)] px-6 py-5">
-        <div className="flex items-center gap-2">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-[var(--pf-fg)] opacity-40 motion-reduce:hidden" />
-            <span className="relative inline-flex size-2 rounded-full bg-[var(--pf-fg)]" />
-          </span>
-          <span className="text-sm text-[var(--pf-fg)]">{profile.status}</span>
-        </div>
-        <p className="mt-1 font-mono text-xs text-[var(--pf-muted)]">{profile.statusNote}</p>
+        <p className="font-mono text-xs text-[var(--pf-muted)]">{profile.statusNote}</p>
         <a
           href={profile.links.email}
           onClick={playExternalLink}

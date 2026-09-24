@@ -12,8 +12,8 @@ export type ViewId =
 
 export const profile = {
   handle: "jb.line",
-  role: "Software Engineer",
-  intro: "I build digital products, interfaces and systems.",
+  role: "Still Figuring it out",
+  intro: "I build digital products, interfaces and systems | AI Builds.",
   email: "johnrobertgaufo1@gmail.com",
   location: "11°30′ N to 14°20′ N, 122°20′ E to 124°30′ E",
   status: "Available",
